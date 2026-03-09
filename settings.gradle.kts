@@ -1,0 +1,1 @@
+rootProject.name = "cours_algo_prog"
