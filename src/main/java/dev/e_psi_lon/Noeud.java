@@ -6,6 +6,7 @@ public class Noeud {
     private final int id;
     private boolean mark;
     LinkedList<Arc> succ;
+
     public Noeud(int id) {
         this.id = id;
         this.succ = new LinkedList<>();

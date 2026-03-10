@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.LinkedList;
 
 public class Graphe {
     HashMap<Integer, Noeud> hmap;
@@ -27,6 +28,7 @@ public class Graphe {
         this.hmap = new HashMap<>();
         Path path = Path.of(file);
         try (BufferedReader br = Files.newBufferedReader(path)) {
+            br.readLine();
             br.lines().forEach(line -> {
                 try {
                     String[] parts = line.split(",");
@@ -75,17 +77,16 @@ public class Graphe {
                         .reduce("", (a, b) -> a + b + "\n");
     }
 
-    public void parcours(String method) {
+    public void parcours(ParcoursType method) {
         for (Noeud noeud : hmap.values()) {
             noeud.setMark(false);
         }
         for (Noeud noeud : hmap.values()) {
             if (!noeud.isMarked()) {
                 switch (method) {
-                    case "profR" -> profR(noeud, 0);
-                    case "profL" -> profL(noeud);
-                    case "largeur" -> largeur(noeud);
-                    default -> throw new IllegalArgumentException("Invalid method");
+                    case PROFONDEUR_R -> profR(noeud, 0);
+                    case PROFONDEUR_L -> profL(noeud);
+                    case LARGEUR -> largeur(noeud);
                 }
             }
         }
@@ -125,6 +126,21 @@ public class Graphe {
 
     }
     private void largeur(@NotNull Noeud noeud) {
+        LinkedList<Noeud> file = new LinkedList<>();
+        noeud.setMark(true);
+        file.add(noeud);
+        System.out.println(" " + noeud);
 
+        while (!file.isEmpty()) {
+            Noeud current = file.remove();
+            for (Arc arc : current.getSucc()) {
+                Noeud x = arc.getCible();
+                if (!x.isMarked()) {
+                    x.setMark(true);
+                    file.add(x);
+                    System.out.println(" " + x);
+                }
+            }
+        }
     }
 }
