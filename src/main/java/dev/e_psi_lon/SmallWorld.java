@@ -4,30 +4,25 @@ import java.util.LinkedList;
 import java.util.Random;
 
 public class SmallWorld extends Graphe {
-
-    private final Random rand = new Random();
-
-
     public SmallWorld(int n, int d) {
-        super(n);  
+        super(n);
 
         for (int i = 0; i < n; i++) {
             for (int j = 1; j <= d; j++) {
                 int voisin = (i + j) % n;
                 addArc(i, voisin);
-                addArc(voisin, i); 
+                addArc(voisin, i);
             }
         }
     }
 
 
-    public SmallWorld(int n, int d, double p) {
-        this(n, d);  
 
+    public SmallWorld(int n, int d, double p) {
+        this(n, d);
+        final Random rand = new Random();
         for (int v : hmap.keySet()) {
             Noeud noeudV = getNoeud(v);
-
-            
             LinkedList<Arc> succCopy = new LinkedList<>(noeudV.getSucc());
 
             for (Arc arc : succCopy) {
@@ -37,6 +32,9 @@ public class SmallWorld extends Graphe {
                         r = rand.nextInt(hmap.size());
                     } while (r == v || noeudV.hasSuccesseur(r));
 
+                    int x = arc.cible().getId();
+                    removeArc(v, x);
+                    removeArc(x, v);
                     addArc(v, r);
                     addArc(r, v);
                 }

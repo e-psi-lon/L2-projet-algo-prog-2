@@ -57,6 +57,12 @@ public class Graphe {
         return hmap.containsKey(id);
     }
 
+    public void removeArc(int source, int cible) {
+        Noeud noeudSource = getNoeud(source);
+        if (noeudSource == null) return;
+        noeudSource.getSucc().removeIf(arc -> arc.cible().getId() == cible);
+    }
+
     public void addNoeud(@NotNull Noeud noeud) {
         if (hmap.containsKey(noeud.getId())) return;
         hmap.put(noeud.getId(), noeud);
@@ -125,22 +131,20 @@ public class Graphe {
         System.out.println(" " + noeud);
         while (!stack.isEmpty()) {
             Noeud current = stack.peek();
-            if (current.isMarked()) stack.pop();
+            boolean allMarked = current.getSucc().stream()
+                    .allMatch(arc -> arc.cible().isMarked());
+            if (allMarked) stack.pop();
             else {
-                if (!current.isMarked()) {
-                    for (Arc arc : current.getSucc()) {
-                        if (!arc.cible().isMarked()) {
-                            arc.cible().setMark(true);
-                            stack.push(arc.cible());
-                            System.out.println(" " + arc.cible());
-                            break;
-                        }
+                for (Arc arc : current.getSucc()) {
+                    if (!arc.cible().isMarked()) {
+                        arc.cible().setMark(true);
+                        stack.push(arc.cible());
+                        System.out.println(" " + arc.cible());
+                        break;
                     }
                 }
             }
-            current.setMark(false);
         }
-
     }
     private void largeur(@NotNull Noeud noeud) {
         LinkedList<Noeud> file = new LinkedList<>();
