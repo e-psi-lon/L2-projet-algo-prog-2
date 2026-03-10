@@ -114,7 +114,7 @@ public class Graphe {
         for (int i = 0; i < depth; i++) System.out.print("-");
         System.out.println(" " + noeud);
         for (Arc arc : noeud.getSucc()) {
-            if (!arc.getCible().isMarked()) profR(arc.getCible(), depth + 1);
+            if (!arc.cible().isMarked()) profR(arc.cible(), depth + 1);
         }
     }
 
@@ -129,10 +129,10 @@ public class Graphe {
             else {
                 if (!current.isMarked()) {
                     for (Arc arc : current.getSucc()) {
-                        if (!arc.getCible().isMarked()) {
-                            arc.getCible().setMark(true);
-                            stack.push(arc.getCible());
-                            System.out.println(" " + arc.getCible());
+                        if (!arc.cible().isMarked()) {
+                            arc.cible().setMark(true);
+                            stack.push(arc.cible());
+                            System.out.println(" " + arc.cible());
                             break;
                         }
                     }
@@ -151,7 +151,7 @@ public class Graphe {
         while (!file.isEmpty()) {
             Noeud current = file.remove();
             for (Arc arc : current.getSucc()) {
-                Noeud x = arc.getCible();
+                Noeud x = arc.cible();
                 if (!x.isMarked()) {
                     x.setMark(true);
                     file.add(x);
@@ -166,8 +166,8 @@ public class Graphe {
         String sep = ",";
         for (Noeud n : hmap.values()) {
             for (Arc a : n.getSucc()) {
-                if (n.getId() < a.getCible().getId()) {
-                    buff.append(n.getId()).append(sep).append(a.getCible().getId()).append(sep).append(a.getWeight()).append("\n");
+                if (n.getId() < a.cible().getId()) {
+                    buff.append(n.getId()).append(sep).append(a.cible().getId()).append(sep).append(a.weight()).append("\n");
                 }
             }
         }

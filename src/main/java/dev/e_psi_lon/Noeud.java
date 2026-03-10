@@ -22,7 +22,7 @@ public class Noeud {
 
     public boolean hasSuccesseur(int j) {
         for (Arc arc : succ) {
-            if (arc.getCible().getId() == j) return true;
+            if (arc.cible().getId() == j) return true;
         }
         return false;
     }
