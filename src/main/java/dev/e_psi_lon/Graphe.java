@@ -40,7 +40,11 @@ public class Graphe {
                     if (parts.length > 2) {
                         int weight = Integer.parseInt(parts[2].trim());
                         addArc(x, y, weight);
-                    } else addArc(x, y);
+                        addArc(y, x, weight);
+                    } else {
+                        addArc(x, y);
+                        addArc(y, x);
+                    }
                 } catch (IndexOutOfBoundsException e) {
                     System.err.println("Invalid line format: " + line);
                 }
@@ -65,22 +69,22 @@ public class Graphe {
         return null;
     }
 
-    public void addArc(int x, int y) {
-        Noeud noeudX = getNoeud(x);
-        Noeud noeudY = getNoeud(y);
-        if (noeudX == null || noeudY == null) return;
-        if (noeudX.hasSuccesseur(y)) return;
-        Arc arc = new Arc(noeudX, noeudY);
-        noeudX.addArc(arc);
+    public void addArc(int source, int cible) {
+        Noeud noeudSource = getNoeud(source);
+        Noeud noeudCible = getNoeud(cible);
+        if (noeudSource == null || noeudCible == null) return;
+        if (noeudSource.hasSuccesseur(cible)) return;
+        Arc arc = new Arc(noeudSource, noeudCible);
+        noeudSource.addArc(arc);
     }
 
-    public void addArc(int x, int y, int weight) {
-        Noeud noeudX = getNoeud(x);
-        Noeud noeudY = getNoeud(y);
-        if (noeudX == null || noeudY == null) return;
-        if (noeudX.hasSuccesseur(y)) return;
-        Arc arc = new Arc(noeudX, noeudY, weight);
-        noeudX.addArc(arc);
+    public void addArc(int source, int cible, int weight) {
+        Noeud noeudSource = getNoeud(source);
+        Noeud noeudCible = getNoeud(cible);
+        if (noeudSource == null || noeudCible == null) return;
+        if (noeudSource.hasSuccesseur(cible)) return;
+        Arc arc = new Arc(noeudSource, noeudCible, weight);
+        noeudSource.addArc(arc);
     }
 
     public String toString() {
@@ -162,7 +166,9 @@ public class Graphe {
         String sep = ",";
         for (Noeud n : hmap.values()) {
             for (Arc a : n.getSucc()) {
-                buff.append(n.getId()).append(sep).append(a.getCible().getId()).append(sep).append(a.getWeight()).append("\n");
+                if (n.getId() < a.getCible().getId()) {
+                    buff.append(n.getId()).append(sep).append(a.getCible().getId()).append(sep).append(a.getWeight()).append("\n");
+                }
             }
         }
         Path path = Path.of(getClass() + ".csv");
