@@ -11,5 +11,6 @@ public class Main {
         graphe.parcours(ParcoursType.PROFONDEUR_L);
         System.out.println("Parcours en largeur :");
         graphe.parcours(ParcoursType.LARGEUR);
+        graphe.export();
     }
 }

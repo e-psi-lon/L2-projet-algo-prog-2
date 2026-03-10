@@ -143,4 +143,20 @@ public class Graphe {
             }
         }
     }
+
+    public void export() {
+        StringBuilder buff = new StringBuilder("Source,Target\n");
+        String sep = ",";
+        for (Noeud n : hmap.values()) {
+            for (Arc a : n.getSucc()) {
+                buff.append(n.getId()).append(sep).append(a.getCible().getId()).append("\n");
+            }
+        }
+        Path path = Path.of(getClass() + ".csv");
+        try {
+            Files.writeString(path, buff.toString());
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
+    }
 }
