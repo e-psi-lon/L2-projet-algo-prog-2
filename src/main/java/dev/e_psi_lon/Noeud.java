@@ -1,22 +1,22 @@
 package dev.e_psi_lon;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class Noeud {
     private final int id;
     private boolean mark;
-    LinkedList<Arc> succ;
+    ArrayList<Arc> succ;
 
     public Noeud(int id) {
         this.id = id;
-        this.succ = new LinkedList<>();
+        this.succ = new ArrayList<>();
     }
 
     public int getId() {
         return id;
     }
 
-    public LinkedList<Arc> getSucc() {
+    public ArrayList<Arc> getSucc() {
         return succ;
     }
 
