@@ -36,7 +36,11 @@ public class Graphe {
                     if (!hasNoeud(x)) addNoeud(new Noeud(x));
                     int y = Integer.parseInt(parts[1].trim());
                     if (!hasNoeud(y)) addNoeud(new Noeud(y));
-                    this.addArc(x, y);
+                    // If there is a third element, it's the weight
+                    if (parts.length > 2) {
+                        int weight = Integer.parseInt(parts[2].trim());
+                        addArc(x, y, weight);
+                    } else addArc(x, y);
                 } catch (IndexOutOfBoundsException e) {
                     System.err.println("Invalid line format: " + line);
                 }
@@ -67,6 +71,15 @@ public class Graphe {
         if (noeudX == null || noeudY == null) return;
         if (noeudX.hasSuccesseur(y)) return;
         Arc arc = new Arc(noeudX, noeudY);
+        noeudX.addArc(arc);
+    }
+
+    public void addArc(int x, int y, int weight) {
+        Noeud noeudX = getNoeud(x);
+        Noeud noeudY = getNoeud(y);
+        if (noeudX == null || noeudY == null) return;
+        if (noeudX.hasSuccesseur(y)) return;
+        Arc arc = new Arc(noeudX, noeudY, weight);
         noeudX.addArc(arc);
     }
 
@@ -145,11 +158,11 @@ public class Graphe {
     }
 
     public void export() {
-        StringBuilder buff = new StringBuilder("Source,Target\n");
+        StringBuilder buff = new StringBuilder("Source,Target,Weight\n");
         String sep = ",";
         for (Noeud n : hmap.values()) {
             for (Arc a : n.getSucc()) {
-                buff.append(n.getId()).append(sep).append(a.getCible().getId()).append("\n");
+                buff.append(n.getId()).append(sep).append(a.getCible().getId()).append(sep).append(a.getWeight()).append("\n");
             }
         }
         Path path = Path.of(getClass() + ".csv");
