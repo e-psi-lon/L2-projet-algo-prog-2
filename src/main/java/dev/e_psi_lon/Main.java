@@ -40,5 +40,7 @@ public class Main {
         scale.export();
 
         System.out.println("\nGraphes générés et exportés !");
+
+
     }
 }

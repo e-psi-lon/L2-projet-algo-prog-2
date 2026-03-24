@@ -6,9 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Stack;
-import java.util.LinkedList;
+import java.util.*;
 
 public class Graphe {
     HashMap<Integer, Noeud> hmap;
@@ -80,11 +78,11 @@ public class Graphe {
         Noeud noeudCible = getNoeud(cible);
         if (noeudSource == null || noeudCible == null) return;
         if (noeudSource.hasSuccesseur(cible)) return;
-        Arc arc = new Arc(noeudSource, noeudCible);
+        Arc arc = new Arc(noeudSource, noeudCible, noeudSource.distance(noeudCible));
         noeudSource.addArc(arc);
     }
 
-    public void addArc(int source, int cible, int weight) {
+    public void addArc(int source, int cible, double weight) {
         Noeud noeudSource = getNoeud(source);
         Noeud noeudCible = getNoeud(cible);
         if (noeudSource == null || noeudCible == null) return;
@@ -181,5 +179,85 @@ public class Graphe {
         } catch (IOException e) {
             System.err.println("Error writing to file: " + e.getMessage());
         }
+    }
+
+    public static @NotNull Graphe kruskal(@NotNull Graphe graphe) {
+        ArrayList<Arc> arcs = new ArrayList<>();
+        graphe.hmap.values().forEach(noeud -> noeud.getSucc().forEach(arc -> {
+            if (arc.source().getId() < arc.cible().getId()) arcs.add(arc);
+        }));
+        arcs.sort(Comparator.comparingDouble(Arc::weight));
+
+        Set<Integer> nodes = graphe.hmap.keySet();
+
+        HashMap<Integer, Integer> parent = new HashMap<>();
+        for (int id : nodes) parent.put(id, id);
+
+        Graphe mst = new Graphe();
+        int edgesAdded = 0;
+        for (Arc arc : arcs) {
+            if (edgesAdded == nodes.size() - 1) break;
+
+            int x = arc.source().getId();
+            while (!parent.get(x).equals(x)) {
+                parent.put(x, parent.get(parent.get(x)));
+                x = parent.get(x);
+            }
+
+            int y = arc.cible().getId();
+            while (!parent.get(y).equals(y)) {
+                parent.put(y, parent.get(parent.get(y)));
+                y = parent.get(y);
+            }
+
+            if (x != y) {
+                parent.put(x, y);
+                int srcId = arc.source().getId();
+                int tgtId = arc.cible().getId();
+                if (!mst.hasNoeud(srcId)) mst.addNoeud(new Noeud(srcId));
+                if (!mst.hasNoeud(tgtId)) mst.addNoeud(new Noeud(tgtId));
+                mst.addArc(srcId, tgtId, arc.weight());
+                mst.addArc(tgtId, srcId, arc.weight());
+                edgesAdded++;
+            }
+        }
+        return mst;
+    }
+
+    public double getTotalWeight() {
+        double totalWeight = 0;
+        for (Arc arc : hmap.values().stream().flatMap(noeud -> noeud.getSucc().stream()).toList()) {
+            totalWeight += arc.weight();
+        }
+        return totalWeight;
+    }
+
+    public void glouton() {
+        long beginningTime = System.currentTimeMillis();
+        int randomNumber = (int) (Math.random() * hmap.size());
+        Noeud currentNode = hmap.get(randomNumber);
+        Noeud beginning = currentNode;
+        currentNode.setMark(true);
+        for (int i : hmap.keySet()) {
+            double minDist = Double.MAX_VALUE;
+            int newNode = -1;
+            for (int j : hmap.keySet()) {
+                if (!hmap.get(j).isMarked()) {
+                    double dist = currentNode.distance(hmap.get(j));
+                    if (dist < minDist) {
+                        minDist = dist;
+                        newNode = j;
+                    }
+                }
+            }
+            this.addArc(currentNode.getId(), hmap.get(newNode).getId(), minDist);
+            currentNode = hmap.get(newNode);
+            currentNode.setMark(true);
+        }
+        double distRetour = currentNode.distance(beginning);
+        addArc(currentNode.getId(), beginning.getId(), distRetour);
+        long end = System.currentTimeMillis();
+        double temps = end - beginningTime;
+        System.out.println("Temps estimé : "+temps+" ms");
     }
 }
