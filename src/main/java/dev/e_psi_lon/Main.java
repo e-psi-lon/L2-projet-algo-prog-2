@@ -41,6 +41,11 @@ public class Main {
 
         System.out.println("\nGraphes générés et exportés !");
 
+        Noeud a = new Noeud(0, 16.47, 96.1);
+        Noeud b = new Noeud(1, 16.47,94.44);
+
+        System.out.println(a.haversineDistance(b));
+
 
     }
 }

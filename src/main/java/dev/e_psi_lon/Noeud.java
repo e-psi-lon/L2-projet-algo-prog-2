@@ -16,7 +16,7 @@ public class Noeud {
         setPosition(0, 0);
     }
 
-    public Noeud(int id, int x, int y) {
+    public Noeud(int id, double x, double y) {
         this.id = id;
         this.succ = new ArrayList<>();
         setPosition(x, y);
@@ -83,7 +83,7 @@ public class Noeud {
         double deltaLatitude = 1 - Math.cos(otherLatitude - latitude) / 2;
         double distance = Math.asin(
                 Math.sqrt(deltaLatitude + Math.cos(latitude) * Math.cos(otherLatitude) * deltaLongitude)
-        ) * 2;
+        );
         return distance * 6371;
     }
 }
