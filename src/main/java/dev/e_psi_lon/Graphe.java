@@ -3,6 +3,7 @@ package dev.e_psi_lon;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,7 @@ import java.util.*;
 
 public class Graphe {
     HashMap<Integer, Noeud> hmap;
+    private boolean isGeo = false;
 
     public Graphe() {
         this.hmap = new HashMap<>();
@@ -22,33 +24,41 @@ public class Graphe {
         }
     }
 
-    public Graphe(String file) throws IOException {
-        this.hmap = new HashMap<>();
-        Path path = Path.of(file);
-        try (BufferedReader br = Files.newBufferedReader(path)) {
-            br.readLine();
-            br.lines().forEach(line -> {
-                try {
-                    String[] parts = line.split(",");
-                    int x = Integer.parseInt(parts[0].trim());
-                    if (!hasNoeud(x)) addNoeud(new Noeud(x));
-                    int y = Integer.parseInt(parts[1].trim());
-                    if (!hasNoeud(y)) addNoeud(new Noeud(y));
-                    // If there is a third element, it's the weight
-                    if (parts.length > 2) {
-                        int weight = Integer.parseInt(parts[2].trim());
-                        addArc(x, y, weight);
-                        addArc(y, x, weight);
-                    } else {
-                        addArc(x, y);
-                        addArc(y, x);
-                    }
-                } catch (IndexOutOfBoundsException e) {
-                    System.err.println("Invalid line format: " + line);
-                }
-            });
-        }
 
+    public Graphe(String cheminFichier) throws IOException {
+    this.hmap = new HashMap<>();
+
+    try (BufferedReader br = new BufferedReader(new FileReader(cheminFichier))) {
+
+        // 1. Lire le type (2D ou GEO)
+        String premiereLigne = br.readLine().trim();
+        this.isGeo = premiereLigne.equalsIgnoreCase("GEO");
+
+        String ligne;
+
+        // 2. Lire les noeuds (id, x, y)
+        while ((ligne = br.readLine()) != null) {
+            try {
+                String[] parties = ligne.split(";");
+
+                if (parties.length < 3) {
+                    System.err.println("Ligne invalide : " + ligne);
+                    continue;
+                }
+
+                int id = Integer.parseInt(parties[0].trim());
+                double x = Double.parseDouble(parties[1].trim());
+                double y = Double.parseDouble(parties[2].trim());
+
+                if (!hasNoeud(id)) {
+                    addNoeud(new Noeud(id, x, y));
+                }
+
+            } catch (Exception e) {
+                System.err.println("Erreur parsing ligne : " + ligne);
+            }
+        }
+    }
     }
 
     public boolean hasNoeud(int id) {
@@ -233,6 +243,7 @@ public class Graphe {
     }
 
     public void glouton() {
+        double dist;
         long beginningTime = System.currentTimeMillis();
         int randomNumber = (int) (Math.random() * hmap.size());
         Noeud currentNode = hmap.get(randomNumber);
@@ -242,19 +253,35 @@ public class Graphe {
             double minDist = Double.MAX_VALUE;
             int newNode = -1;
             for (int j : hmap.keySet()) {
+
                 if (!hmap.get(j).isMarked()) {
-                    double dist = currentNode.distance(hmap.get(j));
+                    if(isGeo){
+                        dist = currentNode.haversineDistance(hmap.get(j));
+                    }
+                    else{
+                    dist = currentNode.distance(hmap.get(j));
+                    }
                     if (dist < minDist) {
                         minDist = dist;
                         newNode = j;
                     }
                 }
             }
-            this.addArc(currentNode.getId(), hmap.get(newNode).getId(), minDist);
-            currentNode = hmap.get(newNode);
-            currentNode.setMark(true);
+                if (newNode != -1) {
+                    this.addArc(currentNode.getId(), hmap.get(newNode).getId(), minDist);
+                    currentNode = hmap.get(newNode);
+                    currentNode.setMark(true);
+                } else {
+                    break;
+                }
         }
-        double distRetour = currentNode.distance(beginning);
+        double distRetour;
+        if(isGeo){
+            distRetour = currentNode.haversineDistance(beginning);
+        }
+        else{
+            distRetour = currentNode.distance(beginning);
+        }
         addArc(currentNode.getId(), beginning.getId(), distRetour);
         long end = System.currentTimeMillis();
         double temps = end - beginningTime;
