@@ -244,7 +244,7 @@ public class Graphe {
 
     public void glouton() {
         double dist;
-        long beginningTime = System.currentTimeMillis();
+        long beginningTime = System.nanoTime();
         if (hmap.isEmpty()) return;
         Integer[] keys = hmap.keySet().toArray(new Integer[0]);
         int randomKey = keys[(int) (Math.random() * keys.length)];
@@ -284,8 +284,15 @@ public class Graphe {
             distRetour = currentNode.distance(beginning);
         }
         addArc(currentNode.getId(), beginning.getId(), distRetour);
-        long end = System.currentTimeMillis();
+        long end = System.nanoTime();
         double temps = end - beginningTime;
-        System.out.println("Estimated time: "+temps+" ms");
+        System.out.println("Estimated time: "+temps/1_000_000+" ms");
+    }
+
+    public void reset() {
+        for (Noeud n : hmap.values()) {
+            n.setMark(false);
+            n.getSucc().clear();
+        }
     }
 }
