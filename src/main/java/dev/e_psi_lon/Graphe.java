@@ -30,13 +30,13 @@ public class Graphe {
 
     try (BufferedReader br = new BufferedReader(new FileReader(cheminFichier))) {
 
-        // 1. Lire le type (2D ou GEO)
+        // 1. Read type
         String premiereLigne = br.readLine().trim();
         this.isGeo = premiereLigne.equalsIgnoreCase("GEO");
 
         String ligne;
 
-        // 2. Lire les noeuds (id, x, y)
+        // 2. Reads nodes (id, x, y)
         while ((ligne = br.readLine()) != null) {
             try {
                 String[] parties = ligne.split(";");
@@ -245,21 +245,22 @@ public class Graphe {
     public void glouton() {
         double dist;
         long beginningTime = System.currentTimeMillis();
-        int randomNumber = (int) (Math.random() * hmap.size());
-        Noeud currentNode = hmap.get(randomNumber);
+        if (hmap.isEmpty()) return;
+        Integer[] keys = hmap.keySet().toArray(new Integer[0]);
+        int randomKey = keys[(int) (Math.random() * keys.length)];
+        Noeud currentNode = hmap.get(randomKey);
         Noeud beginning = currentNode;
         currentNode.setMark(true);
         for (int i : hmap.keySet()) {
             double minDist = Double.MAX_VALUE;
             int newNode = -1;
             for (int j : hmap.keySet()) {
-
                 if (!hmap.get(j).isMarked()) {
-                    if(isGeo){
+                    if(isGeo) {
                         dist = currentNode.haversineDistance(hmap.get(j));
                     }
-                    else{
-                    dist = currentNode.distance(hmap.get(j));
+                    else {
+                        dist = currentNode.distance(hmap.get(j));
                     }
                     if (dist < minDist) {
                         minDist = dist;
@@ -267,24 +268,24 @@ public class Graphe {
                     }
                 }
             }
-                if (newNode != -1) {
-                    this.addArc(currentNode.getId(), hmap.get(newNode).getId(), minDist);
-                    currentNode = hmap.get(newNode);
-                    currentNode.setMark(true);
-                } else {
-                    break;
-                }
+            if (newNode != -1) {
+                addArc(currentNode.getId(), hmap.get(newNode).getId(), minDist);
+                currentNode = hmap.get(newNode);
+                currentNode.setMark(true);
+            } else {
+                break;
+            }
         }
         double distRetour;
-        if(isGeo){
+        if(isGeo) {
             distRetour = currentNode.haversineDistance(beginning);
         }
-        else{
+        else {
             distRetour = currentNode.distance(beginning);
         }
         addArc(currentNode.getId(), beginning.getId(), distRetour);
         long end = System.currentTimeMillis();
         double temps = end - beginningTime;
-        System.out.println("Temps estimé : "+temps+" ms");
+        System.out.println("Estimated time: "+temps+" ms");
     }
 }
