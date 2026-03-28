@@ -75,15 +75,19 @@ public class Noeud {
     }
 
     double haversineDistance(@NotNull Noeud other) {
-        double longitude = Math.toRadians(x);
-        double latitude = Math.toRadians(y);
-        double otherLongitude = Math.toRadians(other.getX());
-        double otherLatitude = Math.toRadians(other.getY());
-        double deltaLongitude = 1 - Math.cos(otherLongitude - longitude) / 2;
-        double deltaLatitude = 1 - Math.cos(otherLatitude - latitude) / 2;
-        double distance = Math.asin(
-                Math.sqrt(deltaLatitude + Math.cos(latitude) * Math.cos(otherLatitude) * deltaLongitude)
-        );
+        double latitude = Math.toRadians(x);
+        double longitude = Math.toRadians(y);
+        double otherLatitude = Math.toRadians(other.getX());
+        double otherLongitude = Math.toRadians(other.getY());
+        double deltaLongitude = otherLongitude - longitude;
+        double deltaLatitude = otherLatitude - latitude;
+
+        double a = Math.sin(deltaLatitude / 2) * Math.sin(deltaLatitude / 2)
+            + Math.cos(latitude) * Math.cos(otherLatitude)
+            * Math.sin(deltaLongitude / 2) * Math.sin(deltaLongitude / 2);
+
+        double distance = 2*Math.asin(Math.sqrt(a));
+
         return distance * 6371;
     }
 }

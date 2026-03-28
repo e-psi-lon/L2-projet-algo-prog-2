@@ -50,6 +50,7 @@ public class Main {
         System.out.println(g.toString()); 
         g.glouton();
         System.out.println(g.toString());
+        System.out.println(g.getTotalWeight());
 
     }
 }
