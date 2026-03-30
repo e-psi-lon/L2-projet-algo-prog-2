@@ -38,8 +38,13 @@ public class Noeud {
     }
 
     @Override
-    public String toString() {
-        return "Noeud(" + id + ")";
+    public String toString(){
+        StringBuilder s = new StringBuilder("| id : " + id + " arc : ");
+        for(Arc a : succ){
+            s.append(a.cible().getId()).append(" ");
+        }
+        s.append("|");
+        return s.toString();
     }
 
     public void addArc(Arc arc) {

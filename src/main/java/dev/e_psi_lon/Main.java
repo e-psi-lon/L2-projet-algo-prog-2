@@ -6,7 +6,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 
-        /*Graphe graphe = new Graphe("graphe.csv");
+        /*
+        Graphe graphe = new Graphe("graphe.csv");
 
         System.out.println("Parcours en profondeur (right) :");
         graphe.parcours(ParcoursType.PROFONDEUR_R);
@@ -44,12 +45,13 @@ public class Main {
         Noeud a = new Noeud(0, 16.47, 96.1);
         Noeud b = new Noeud(1, 16.47,94.44);
 
-        System.out.println(a.haversineDistance(b));*/
+        System.out.println(a.haversineDistance(b));
+        */
 
         Graphe g = new Graphe("14-points (avec point et non virgule pour les doubles).csv");
-        System.out.println(g.toString()); 
+        System.out.println(g);
         g.glouton();
-        System.out.println(g.toString());
+        System.out.println(g);
         System.out.println(g.getTotalWeight());
 
     }
