@@ -1,6 +1,8 @@
 package dev.e_psi_lon;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
 
@@ -49,10 +51,31 @@ public class Main {
         */
 
         Graphe g = new Graphe("14-points (avec point et non virgule pour les doubles).csv");
-        System.out.println(g);
-        g.glouton();
-        System.out.println(g);
-        System.out.println(g.getTotalWeight());
 
+        System.out.println("\nGlouton :");
+
+        g.glouton();
+        System.out.println("Poids = " +g.getTotalWeight());
+
+        System.out.println("\nMST :");
+
+        Graphe g2 = new Graphe("14-points (avec point et non virgule pour les doubles).csv");
+        g2.construireGrapheComplet();
+        
+        List<Noeud> cycle = g2.mst();
+
+        double total = 0;
+
+        for (int i = 0; i < cycle.size() - 1; i++) {
+            if(!g2.geo()){
+            total += cycle.get(i).distance(cycle.get(i+1));
+            }
+            else{
+                total += cycle.get(i).haversineDistance(cycle.get(i+1));
+            }
+        }
+
+        System.out.println("Poids = " + total);
+        
     }
 }

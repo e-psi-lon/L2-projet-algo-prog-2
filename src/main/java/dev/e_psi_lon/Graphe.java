@@ -61,6 +61,29 @@ public class Graphe {
     }
     }
 
+    public boolean geo(){
+        return isGeo;
+    }
+
+    public void construireGrapheComplet() {
+        for (Noeud a : hmap.values()) {
+            for (Noeud b : hmap.values()) {
+                if (a != b && !a.hasSuccesseur(b.getId())) {
+
+                    double dist;
+
+                    if (isGeo) {
+                        dist = a.haversineDistance(b);
+                    } else {
+                        dist = a.distance(b);
+                    }
+
+                    addArc(a.getId(), b.getId(), dist);
+                }
+            }
+        }
+    }
+
     public boolean hasNoeud(int id) {
         return hmap.containsKey(id);
     }
@@ -224,8 +247,17 @@ public class Graphe {
                 parent.put(x, y);
                 int srcId = arc.source().getId();
                 int tgtId = arc.cible().getId();
-                if (!mst.hasNoeud(srcId)) mst.addNoeud(new Noeud(srcId));
-                if (!mst.hasNoeud(tgtId)) mst.addNoeud(new Noeud(tgtId));
+                Noeud originalSrc = graphe.getNoeud(srcId);
+                Noeud originalTgt = graphe.getNoeud(tgtId);
+
+                if (!mst.hasNoeud(srcId))
+                    mst.addNoeud(new Noeud(srcId, originalSrc.getX(), originalSrc.getY()));
+
+                if (!mst.hasNoeud(tgtId))
+                    mst.addNoeud(new Noeud(tgtId, originalTgt.getX(), originalTgt.getY()));
+
+                //if (!mst.hasNoeud(srcId)) mst.addNoeud(new Noeud(srcId));
+                //if (!mst.hasNoeud(tgtId)) mst.addNoeud(new Noeud(tgtId));
                 mst.addArc(srcId, tgtId, arc.weight());
                 mst.addArc(tgtId, srcId, arc.weight());
                 edgesAdded++;
@@ -295,4 +327,44 @@ public class Graphe {
             n.getSucc().clear();
         }
     }
+
+//MST
+
+public List<Noeud> mst() {
+    long beginningTime = System.nanoTime();
+    Graphe mst = Graphe.kruskal(this);
+    for (Noeud n : mst.hmap.values()) {
+        n.setMark(false);
+    }
+    List<Noeud> parcours = new ArrayList<>();
+    Noeud start = mst.hmap.values().iterator().next();
+    mst.profondeurMST(start, parcours);
+    List<Noeud> cycle = new ArrayList<>();
+    Set<Integer> visited = new HashSet<>();
+    for (Noeud n : parcours) {
+        if (!visited.contains(n.getId())) {
+            cycle.add(n);
+            visited.add(n.getId());
+        }
+    }
+    cycle.add(cycle.get(0));
+
+    long end = System.nanoTime();
+    double temps = end - beginningTime;
+    System.out.println("Estimated time: "+temps/1_000_000+" ms");
+
+    return cycle;
+}
+
+public void profondeurMST(Noeud noeud, List<Noeud> parcours) {
+    noeud.setMark(true);
+    parcours.add(noeud);
+
+    for (Arc arc : noeud.getSucc()) {
+        if (!arc.cible().isMarked()) {
+            profondeurMST(arc.cible(), parcours);
+            parcours.add(noeud);
+        }
+    }
+}
 }
