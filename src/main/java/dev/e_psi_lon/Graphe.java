@@ -65,8 +65,8 @@ public class Graphe {
         return isGeo;
     }
 
-    public void setgeo(boolean b){
-        isGeo = b;
+    public void setGeo(boolean value){
+        isGeo = value;
     }
 
     public void construireGrapheComplet() {
@@ -329,74 +329,193 @@ public class Graphe {
         }
     }
 
-//MST
+    //MST
 
-public Graphe mst() {
-    long beginningTime = System.nanoTime();
-    Graphe mst = Graphe.kruskal(this); // construction de l'arbre de recouvrement minimal
+    public Graphe mst() {
+        long beginningTime = System.nanoTime();
+        Graphe mst = Graphe.kruskal(this); // Build the first minimal spanning tree
 
-    for (Noeud n : mst.hmap.values()) {
-        n.setMark(false);
-    }
-
-    List<Noeud> parcours = new ArrayList<>();
-    Noeud start = mst.hmap.values().iterator().next();
-    mst.profondeurMST(start, parcours); // parcours en profondeur
-
-    //supression des doublons 
-    List<Noeud> cycle = new ArrayList<>();
-    Set<Integer> visited = new HashSet<>();
-
-    for (Noeud n : parcours) {
-        if (!visited.contains(n.getId())) {
-            cycle.add(n);
-            visited.add(n.getId());
+        for (Noeud n : mst.hmap.values()) {
+            n.setMark(false);
         }
-    }
 
-    cycle.add(cycle.get(0));//fermeture du cycle
+        List<Noeud> parcours = new ArrayList<>();
+        Noeud start = mst.hmap.values().iterator().next();
+        mst.profondeurMST(start, parcours); // depth
 
-    // construction du graphe résultat
-    Graphe result = new Graphe();
+        // Removing duplicates
+        List<Noeud> cycle = new ArrayList<>();
+        Set<Integer> visited = new HashSet<>();
 
-    // ajouts des noeuds
-    for (Noeud n : cycle) {
-        result.addNoeud(new Noeud(n.getId(), n.getX(), n.getY()));
-    }
+        for (Noeud n : parcours) {
+            if (!visited.contains(n.getId())) {
+                cycle.add(n);
+                visited.add(n.getId());
+            }
+        }
 
-    // ajouts des arcs
-    for (int i = 0; i < cycle.size() - 1; i++) {
-        Noeud a = cycle.get(i);
-        Noeud b = cycle.get(i + 1);
+        cycle.add(cycle.getFirst()); // Close the cycle
 
-        double dist;
+        // Building resulting graph
+        Graphe result = new Graphe();
 
-        if(this.isGeo) {
+        // Add nodes
+        for (Noeud n : cycle) {
+            result.addNoeud(new Noeud(n.getId(), n.getX(), n.getY()));
+        }
+
+        // Add arcs
+        for (int i = 0; i < cycle.size() - 1; i++) {
+            Noeud a = cycle.get(i);
+            Noeud b = cycle.get(i + 1);
+
+            double dist;
+
+            if (this.isGeo) {
                 dist = a.haversineDistance(b);
-                    }
-                    else {
+            }
+            else {
                 dist = a.distance(b);
-                    }
+            }
 
-        result.addArc(a.getId(), b.getId(), dist);
+            result.addArc(a.getId(), b.getId(), dist);
+        }
+
+        long end = System.nanoTime();
+        double temps = end - beginningTime;
+        System.out.println("Estimated time: "+temps/1_000_000+" ms");
+
+        return result;
     }
 
-    long end = System.nanoTime();
-    double temps = end - beginningTime;
-    System.out.println("Estimated time: "+temps/1_000_000+" ms");
+    private void profondeurMST(@NotNull Noeud noeud, @NotNull List<Noeud> parcours) {
+        noeud.setMark(true);
+        parcours.add(noeud);
 
-    return result;
-}
-
-public void profondeurMST(Noeud noeud, List<Noeud> parcours) {
-    noeud.setMark(true);
-    parcours.add(noeud);
-
-    for (Arc arc : noeud.getSucc()) {
-        if (!arc.cible().isMarked()) {
-            profondeurMST(arc.cible(), parcours);
-            parcours.add(noeud);
+        for (Arc arc : noeud.getSucc()) {
+            if (!arc.cible().isMarked()) {
+                profondeurMST(arc.cible(), parcours);
+                parcours.add(noeud);
+            }
         }
     }
-}
+
+    public Graphe mm() {
+        long beginningTime = System.nanoTime();
+
+        Graphe mst = Graphe.kruskal(this);
+
+        List<Integer> oddVertices = getOddDegreeVertices(mst);
+
+        List<int[]> matching = new ArrayList<>();
+        List<Integer> remaining = new ArrayList<>(oddVertices);
+
+        while (remaining.size() >= 2) {
+            int uId = remaining.removeFirst();
+            Noeud u = this.getNoeud(uId);
+
+            double bestDist = Double.MAX_VALUE;
+            int bestIndex = -1;
+
+            for (int i = 0; i < remaining.size(); i++) {
+                Noeud v = this.getNoeud(remaining.get(i));
+                double dist = this.isGeo ? u.haversineDistance(v) : u.distance(v);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestIndex = i;
+                }
+            }
+
+            int vId = remaining.remove(bestIndex);
+            matching.add(new int[]{uId, vId});
+        }
+
+        Map<Integer, List<Integer>> multi = new HashMap<>();
+        for (Integer id : this.hmap.keySet()) {
+            multi.put(id, new ArrayList<>());
+        }
+
+        for (Noeud n : mst.hmap.values()) {
+            for (Arc a : n.getSucc()) {
+                if (n.getId() < a.cible().getId()) {
+                    multi.get(n.getId()).add(a.cible().getId());
+                    multi.get(a.cible().getId()).add(n.getId());
+                }
+            }
+        }
+
+        for (int[] pair : matching) {
+            multi.get(pair[0]).add(pair[1]);
+            multi.get(pair[1]).add(pair[0]);
+        }
+
+        int startId = mst.hmap.keySet().iterator().next();
+        List<Integer> eulerCircuit = hierholzer(multi, startId);
+
+        Set<Integer> visited = new LinkedHashSet<>(eulerCircuit);
+        List<Integer> tour = new ArrayList<>(visited);
+        tour.add(tour.getFirst());
+
+        Graphe result = new Graphe();
+        result.setGeo(this.isGeo);
+
+        for (int id : tour) {
+            Noeud original = this.getNoeud(id);
+            if (!result.hasNoeud(id))
+                result.addNoeud(new Noeud(id, original.getX(), original.getY()));
+        }
+
+        for (int i = 0; i < tour.size() - 1; i++) {
+            Noeud a = this.getNoeud(tour.get(i));
+            Noeud b = this.getNoeud(tour.get(i + 1));
+            double dist = this.isGeo ? a.haversineDistance(b) : a.distance(b);
+            result.addArc(a.getId(), b.getId(), dist);
+        }
+
+        long end = System.nanoTime();
+        System.out.println("Estimated time: " + (end - beginningTime) / 1_000_000.0 + " ms");
+
+        return result;
+    }
+
+    private static @NotNull List<Integer> getOddDegreeVertices(@NotNull Graphe mst) {
+        Map<Integer, Integer> degree = new HashMap<>();
+        for (Noeud n : mst.hmap.values()) {
+            degree.put(n.getId(), 0);
+        }
+        for (Noeud n : mst.hmap.values()) {
+            for (Arc a : n.getSucc()) {
+                degree.put(n.getId(), degree.get(n.getId()) + 1);
+            }
+        }
+
+        List<Integer> oddVertices = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : degree.entrySet()) {
+            if (entry.getValue() % 2 != 0) {
+                oddVertices.add(entry.getKey());
+            }
+        }
+        return oddVertices;
+    }
+
+    private @NotNull List<Integer> hierholzer(Map<Integer, List<Integer>> graph, int start) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        List<Integer> circuit = new ArrayList<>();
+        stack.push(start);
+
+        while (!stack.isEmpty()) {
+            int v = stack.peek();
+            if (graph.get(v).isEmpty()) {
+                circuit.add(v);
+                stack.pop();
+            } else {
+                int u = graph.get(v).removeFirst();
+                graph.get(u).remove(Integer.valueOf(v)); // remove reverse edge too
+                stack.push(u);
+            }
+        }
+
+        Collections.reverse(circuit); // Hierholzer builds it backwards
+        return circuit;
+    }
 }
