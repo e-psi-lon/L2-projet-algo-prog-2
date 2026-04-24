@@ -50,7 +50,7 @@ public class Main {
         System.out.println(a.haversineDistance(b));
         */
 
-        Graphe g = new Graphe("14-points (avec point et non virgule pour les doubles).csv");
+        Graphe g = new Graphe("52-points (avec-points).csv");
 
         System.out.println("\nGlouton :");
 
@@ -61,21 +61,8 @@ public class Main {
 
         Graphe g2 = new Graphe("14-points (avec point et non virgule pour les doubles).csv");
         g2.construireGrapheComplet();
-        
-        List<Noeud> cycle = g2.mst();
-
-        double total = 0;
-
-        for (int i = 0; i < cycle.size() - 1; i++) {
-            if(!g2.geo()){
-            total += cycle.get(i).distance(cycle.get(i+1));
-            }
-            else{
-                total += cycle.get(i).haversineDistance(cycle.get(i+1));
-            }
-        }
-
-        System.out.println("Poids = " + total);
+        g2 = g2.mst();
+        System.out.println("Poids = " + g2.getTotalWeight());
         
     }
 }

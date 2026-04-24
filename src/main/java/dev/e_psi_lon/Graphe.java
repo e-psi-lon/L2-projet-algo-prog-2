@@ -65,6 +65,10 @@ public class Graphe {
         return isGeo;
     }
 
+    public void setgeo(boolean b){
+        isGeo = b;
+    }
+
     public void construireGrapheComplet() {
         for (Noeud a : hmap.values()) {
             for (Noeud b : hmap.values()) {
@@ -255,9 +259,6 @@ public class Graphe {
 
                 if (!mst.hasNoeud(tgtId))
                     mst.addNoeud(new Noeud(tgtId, originalTgt.getX(), originalTgt.getY()));
-
-                //if (!mst.hasNoeud(srcId)) mst.addNoeud(new Noeud(srcId));
-                //if (!mst.hasNoeud(tgtId)) mst.addNoeud(new Noeud(tgtId));
                 mst.addArc(srcId, tgtId, arc.weight());
                 mst.addArc(tgtId, srcId, arc.weight());
                 edgesAdded++;
@@ -330,30 +331,61 @@ public class Graphe {
 
 //MST
 
-public List<Noeud> mst() {
+public Graphe mst() {
     long beginningTime = System.nanoTime();
-    Graphe mst = Graphe.kruskal(this);
+    Graphe mst = Graphe.kruskal(this); // construction de l'arbre de recouvrement minimal
+
     for (Noeud n : mst.hmap.values()) {
         n.setMark(false);
     }
+
     List<Noeud> parcours = new ArrayList<>();
     Noeud start = mst.hmap.values().iterator().next();
-    mst.profondeurMST(start, parcours);
+    mst.profondeurMST(start, parcours); // parcours en profondeur
+
+    //supression des doublons 
     List<Noeud> cycle = new ArrayList<>();
     Set<Integer> visited = new HashSet<>();
+
     for (Noeud n : parcours) {
         if (!visited.contains(n.getId())) {
             cycle.add(n);
             visited.add(n.getId());
         }
     }
-    cycle.add(cycle.get(0));
+
+    cycle.add(cycle.get(0));//fermeture du cycle
+
+    // construction du graphe résultat
+    Graphe result = new Graphe();
+
+    // ajouts des noeuds
+    for (Noeud n : cycle) {
+        result.addNoeud(new Noeud(n.getId(), n.getX(), n.getY()));
+    }
+
+    // ajouts des arcs
+    for (int i = 0; i < cycle.size() - 1; i++) {
+        Noeud a = cycle.get(i);
+        Noeud b = cycle.get(i + 1);
+
+        double dist;
+
+        if(this.isGeo) {
+                dist = a.haversineDistance(b);
+                    }
+                    else {
+                dist = a.distance(b);
+                    }
+
+        result.addArc(a.getId(), b.getId(), dist);
+    }
 
     long end = System.nanoTime();
     double temps = end - beginningTime;
     System.out.println("Estimated time: "+temps/1_000_000+" ms");
 
-    return cycle;
+    return result;
 }
 
 public void profondeurMST(Noeud noeud, List<Noeud> parcours) {
