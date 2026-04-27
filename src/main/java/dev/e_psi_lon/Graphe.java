@@ -219,22 +219,23 @@ public class Graphe {
     }
 
     public static @NotNull Graphe kruskal(@NotNull Graphe graphe) {
-        ArrayList<Arc> arcs = new ArrayList<>();
+        ArrayList<Arc> arcs = new ArrayList<>(); //Liste qui va contenir tous les arcs
         graphe.hmap.values().forEach(noeud -> noeud.getSucc().forEach(arc -> {
-            if (arc.source().getId() < arc.cible().getId()) arcs.add(arc);
+            if (arc.source().getId() < arc.cible().getId()) arcs.add(arc); // ajout de tous les arcs dans l'ArrayList en évitant les doublons 
         }));
-        arcs.sort(Comparator.comparingDouble(Arc::weight));
+        arcs.sort(Comparator.comparingDouble(Arc::weight));//Trie croissant
 
-        Set<Integer> nodes = graphe.hmap.keySet();
+        Set<Integer> nodes = graphe.hmap.keySet(); //récupére tous les id des noeuds
 
         HashMap<Integer, Integer> parent = new HashMap<>();
-        for (int id : nodes) parent.put(id, id);
+        for (int id : nodes) parent.put(id, id); // Mise en place du Hashmap parent pour que chaque noeuds soit son propre parents
 
         Graphe mst = new Graphe();
         int edgesAdded = 0;
         for (Arc arc : arcs) {
-            if (edgesAdded == nodes.size() - 1) break;
+            if (edgesAdded == nodes.size() - 1) break; // On veut N-1 arrêtes 
 
+            // on recherche le parents du noeuds x et y  
             int x = arc.source().getId();
             while (!parent.get(x).equals(x)) {
                 parent.put(x, parent.get(parent.get(x)));
@@ -247,18 +248,22 @@ public class Graphe {
                 y = parent.get(y);
             }
 
+            //si x et y ne sont pas dans la même composante on fusionne (dans l'autre cas non car ca créerait un cycle)
             if (x != y) {
                 parent.put(x, y);
+                //Récupération des noeuds originaux 
                 int srcId = arc.source().getId();
                 int tgtId = arc.cible().getId();
                 Noeud originalSrc = graphe.getNoeud(srcId);
                 Noeud originalTgt = graphe.getNoeud(tgtId);
 
+                //ajout des noeuds dans le MST (si il n'existent pas encore)
                 if (!mst.hasNoeud(srcId))
                     mst.addNoeud(new Noeud(srcId, originalSrc.getX(), originalSrc.getY()));
 
                 if (!mst.hasNoeud(tgtId))
                     mst.addNoeud(new Noeud(tgtId, originalTgt.getX(), originalTgt.getY()));
+                //Ajout des arc dans les 2 sens
                 mst.addArc(srcId, tgtId, arc.weight());
                 mst.addArc(tgtId, srcId, arc.weight());
                 edgesAdded++;
@@ -279,11 +284,15 @@ public class Graphe {
         double dist;
         long beginningTime = System.nanoTime();
         if (hmap.isEmpty()) return;
+
+        //on prends un noeuds au hasard à partir des clés de notre hmap, pour être notre noeuds de départ
         Integer[] keys = hmap.keySet().toArray(new Integer[0]);
         int randomKey = keys[(int) (Math.random() * keys.length)];
         Noeud currentNode = hmap.get(randomKey);
         Noeud beginning = currentNode;
         currentNode.setMark(true);
+
+        //On parcours touts les noeuds pour chercher le noeuds non visité le plus proche 
         for (int i : hmap.keySet()) {
             double minDist = Double.MAX_VALUE;
             int newNode = -1;
@@ -301,6 +310,7 @@ public class Graphe {
                     }
                 }
             }
+            //Ajout de l'arc si un noeuds à été trouvé 
             if (newNode != -1) {
                 addArc(currentNode.getId(), hmap.get(newNode).getId(), minDist);
                 currentNode = hmap.get(newNode);
@@ -309,6 +319,7 @@ public class Graphe {
                 break;
             }
         }
+        //retour au point de départ
         double distRetour;
         if(isGeo) {
             distRetour = currentNode.haversineDistance(beginning);
