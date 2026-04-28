@@ -1,8 +1,5 @@
 package dev.e_psi_lon;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.HashSet;
 import java.util.Random;
 
@@ -42,8 +39,7 @@ public class RandomGraphe extends Graphe {
         }
     }
 
-    @Contract("_ -> new")
-    private int @NotNull [] bijection(int i) {
+    private int[] bijection(int i) {
         int v = (int)(1 + Math.floor((-1 + Math.sqrt(1 + 8*i)) / 2));
         int w = i - (v*(v-1))/2;
         return new int[]{v, w};

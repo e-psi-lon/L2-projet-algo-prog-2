@@ -1,7 +1,5 @@
 package dev.e_psi_lon;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -98,7 +96,7 @@ public class Graphe {
         noeudSource.getSucc().removeIf(arc -> arc.cible().getId() == cible);
     }
 
-    public void addNoeud(@NotNull Noeud noeud) {
+    public void addNoeud(Noeud noeud) {
         if (hmap.containsKey(noeud.getId())) return;
         hmap.put(noeud.getId(), noeud);
     }
@@ -150,7 +148,7 @@ public class Graphe {
         }
     }
 
-    private void profR(@NotNull Noeud noeud, int depth) {
+    private void profR(Noeud noeud, int depth) {
         noeud.setMark(true);
         for (int i = 0; i < depth; i++) System.out.print("-");
         System.out.println(" " + noeud);
@@ -159,7 +157,7 @@ public class Graphe {
         }
     }
 
-    private void profL(@NotNull Noeud noeud) {
+    private void profL(Noeud noeud) {
         Stack<Noeud> stack = new Stack<>();
         noeud.setMark(true);
         stack.push(noeud);
@@ -181,7 +179,7 @@ public class Graphe {
             }
         }
     }
-    private void largeur(@NotNull Noeud noeud) {
+    private void largeur(Noeud noeud) {
         LinkedList<Noeud> file = new LinkedList<>();
         noeud.setMark(true);
         file.add(noeud);
@@ -218,7 +216,7 @@ public class Graphe {
         }
     }
 
-    public static @NotNull Graphe kruskal(@NotNull Graphe graphe) {
+    public static Graphe kruskal(Graphe graphe) {
         ArrayList<Arc> arcs = new ArrayList<>(); //Liste qui va contenir tous les arcs
         graphe.hmap.values().forEach(noeud -> noeud.getSucc().forEach(arc -> {
             if (arc.source().getId() < arc.cible().getId()) arcs.add(arc); // ajout de tous les arcs dans l'ArrayList en évitant les doublons 
@@ -399,7 +397,7 @@ public class Graphe {
         return result;
     }
 
-    private void profondeurMST(@NotNull Noeud noeud, @NotNull List<Noeud> parcours) {
+    private void profondeurMST(Noeud noeud, List<Noeud> parcours) {
         noeud.setMark(true);
         parcours.add(noeud);
 
@@ -416,10 +414,10 @@ public class Graphe {
 
         Graphe mst = Graphe.kruskal(this);
 
-        List<Integer> oddVertices = getOddDegreeVertices(mst);
+        List<Integer> oddDegreeNodes = getOddDegreeNodes(mst);
 
         List<int[]> matching = new ArrayList<>();
-        List<Integer> remaining = new ArrayList<>(oddVertices);
+        List<Integer> remaining = new ArrayList<>(oddDegreeNodes);
 
         while (remaining.size() >= 2) {
             int uId = remaining.removeFirst();
@@ -489,7 +487,7 @@ public class Graphe {
         return result;
     }
 
-    private static @NotNull List<Integer> getOddDegreeVertices(@NotNull Graphe mst) {
+    private static List<Integer> getOddDegreeNodes(Graphe mst) {
         Map<Integer, Integer> degree = new HashMap<>();
         for (Noeud n : mst.hmap.values()) {
             degree.put(n.getId(), 0);
@@ -509,7 +507,7 @@ public class Graphe {
         return oddVertices;
     }
 
-    private @NotNull List<Integer> hierholzer(Map<Integer, List<Integer>> graph, int start) {
+    private List<Integer> hierholzer(Map<Integer, List<Integer>> graph, int start) {
         Deque<Integer> stack = new ArrayDeque<>();
         List<Integer> circuit = new ArrayList<>();
         stack.push(start);

@@ -1,6 +1,5 @@
 package dev.e_psi_lon;
 
-import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 
 public class Noeud {
@@ -73,13 +72,13 @@ public class Noeud {
         this.y = y;
     }
 
-    double distance(@NotNull Noeud other) {
+    double distance(Noeud other) {
         double distanceX = x - other.getX();
         double distanceY = y - other.getY();
         return Math.sqrt(distanceX * distanceX + distanceY * distanceY);
     }
 
-    double haversineDistance(@NotNull Noeud other) {
+    double haversineDistance(Noeud other) {
         double latitude = Math.toRadians(x);
         double longitude = Math.toRadians(y);
         double otherLatitude = Math.toRadians(other.getX());
